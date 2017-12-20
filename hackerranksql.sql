@@ -129,3 +129,173 @@ from station
 where lat_n < 137.2345;
 
 #https://www.hackerrank.com/challenges/weather-observation-station-15/problem
+/*Tried to do it both with & w/o sub query*/
+select round(long_w,4)
+from station
+where lat_n = (
+    select max(lat_n) 
+    from station 
+    where lat_n < 137.2345
+);
+select round(long_w,4)
+from station
+where lat_n < 137.2345
+order by lat_n desc
+limit 1;
+
+#https://www.hackerrank.com/challenges/weather-observation-station-16/problem
+select round(min(lat_n),4)
+from station
+where lat_n > 38.7780;
+
+#https://www.hackerrank.com/challenges/weather-observation-station-17/problem
+select round(long_w,4)
+from station
+where lat_n > 38.7780
+order by lat_n
+limit 1;
+
+#https://www.hackerrank.com/challenges/weather-observation-station-18/problem
+select round(abs(min(lat_n) - min(long_w)) + abs(max(lat_n) - max(long_w)),4) 
+from station; #actual answer to the question
+
+select round(((max(LAT_N) - min(LAT_N)) + (max(LONG_W) - min(LONG_W))), 4) 
+from STATION; #the answer the site accepts...
+
+#https://www.hackerrank.com/challenges/weather-observation-station-19/problem #12672
+select 
+    round(sqrt(
+            power((min(lat_n) - max(lat_n)),2) +
+            power((min(long_w) - max(long_w)),2)
+        ),4)
+from station;
+
+#https://www.hackerrank.com/challenges/weather-observation-station-20/problem
+Select 
+    round(S.LAT_N,4) median 
+from 
+    station S 
+where 
+    (select 
+        count(Lat_N) 
+    from 
+        station 
+    where 
+        Lat_N < S.LAT_N ) = 
+    (select 
+        count(Lat_N) 
+    from 
+        station 
+    where 
+        Lat_N > S.LAT_N)
+
+#https://www.hackerrank.com/challenges/symmetric-pairs/problem
+select x, y from functions func1
+where exists(
+    select x, y 
+    from functions func2 
+    where 
+        func1.x = func2.y and 
+        func2.x = func1.y and
+        func1.x < func2.x
+) and (x != y)
+union 
+select x, y from functions func1 
+where 
+    x=y and 
+    ((
+        select count(*) 
+        from functions 
+        where 
+            func1.x = x and 
+            func1.x = y
+    ) > 1)
+order by x;
+
+#https://www.hackerrank.com/challenges/asian-population/problem
+select sum(city.population)
+from city inner join country on city.countrycode = country.code
+where continent = 'Asia'
+
+#https://www.hackerrank.com/challenges/african-cities/problem
+select city.name
+from city inner join country on country.code = city.countrycode
+where continent = 'Africa'
+
+#https://www.hackerrank.com/challenges/average-population-of-each-continent/problem
+select country.continent, floor(avg(city.population))
+from country inner join city on country.code = city.countrycode
+group by country.continent
+
+#https://www.hackerrank.com/challenges/the-report/problem
+select (
+    case when g.grade < 8 then NULL 
+    else s.name
+    end), 
+    g.grade, s.marks
+from grades g inner join students s on s.marks >= g.min_mark and s.marks <= g.max_mark
+order by grade desc, s.name asc
+
+#https://www.hackerrank.com/challenges/full-score/problem
+select 
+	h.hacker_id, name
+from
+	hackers h inner join
+	submissions s on s.hacker_id = h.hacker_id inner join
+	challenges c on c.challenge_id = s.challenge_id inner join
+	difficulty d on d.difficulty_level = c.difficulty_level
+where 
+	s.score = d.score and 
+	d.difficulty_level = c.difficulty_level
+group by name, h.hacker_id
+having count(s.hacker_id) > 1
+order by count(s.hacker_id) desc, h.hacker_id asc;
+
+#https://www.hackerrank.com/challenges/harry-potter-and-wands/problem
+select id, age, coins_needed, `power`
+from 
+	wands w inner join 
+	wands_property wp on w.code = wp.code
+where 
+	is_evil = 0 and 
+	coins_needed = (
+		select min(coins_needed) 
+		from 
+			wands w2 inner join 
+			wands_property wp2 on w2.code = wp2.code 
+		where wp.age = wp2.age and w2.power = w.power
+	)
+order by `power` desc, age desc
+
+#https://www.hackerrank.com/challenges/challenges/problem
+/*
+Write a query to print the hacker_id, name, and the total number of challenges created by each student. 
+Sort your results by the total number of challenges in descending order. 
+If more than one student created the same number of challenges, then sort the result by hacker_id. 
+If more than one student created the same number of challenges and the count is less than the maximum number of challenges created, then exclude those students from the result.
+*/
+select h.hacker_id, h.name, count(c.challenge_id) the_count
+from 
+    hackers h inner join
+    challenges c on h.hacker_id = c.hacker_id
+group by h.hacker_id, h.name
+having 
+	the_count = (
+		select count(c2.challenge_id)
+		from 
+		    hackers h2 inner join
+		    challenges c2 on h2.hacker_id = c2.hacker_id
+		group by h2.hacker_id
+	    order by count(c2.challenge_id) desc
+	    limit 1
+	) or 
+	the_count in (
+		select temp.the_count2 from (
+			select count(*) the_count2
+			from challenges
+			group by hacker_id
+		) temp
+		group by temp.the_count2
+		having count(temp.the_count2) = 1
+	)
+order by count(c.challenge_id) desc, h.hacker_id;
