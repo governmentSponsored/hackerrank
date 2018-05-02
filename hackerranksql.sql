@@ -268,12 +268,6 @@ where
 order by `power` desc, age desc
 
 #https://www.hackerrank.com/challenges/challenges/problem
-/*
-Write a query to print the hacker_id, name, and the total number of challenges created by each student. 
-Sort your results by the total number of challenges in descending order. 
-If more than one student created the same number of challenges, then sort the result by hacker_id. 
-If more than one student created the same number of challenges and the count is less than the maximum number of challenges created, then exclude those students from the result.
-*/
 select h.hacker_id, h.name, count(c.challenge_id) the_count
 from 
     hackers h inner join
@@ -299,3 +293,99 @@ having
 		having count(temp.the_count2) = 1
 	)
 order by count(c.challenge_id) desc, h.hacker_id;
+
+#https://www.hackerrank.com/challenges/contest-leaderboard/problem
+/*
+The total score of a hacker is the sum of their maximum scores for all of the challenges. 
+Write a query to print the hacker_id, name, and total score of the hackers ordered by the descending score. 
+If more than one hacker achieved the same total score, then sort the result by ascending hacker_id. 
+Exclude all hackers with a total score of 0 from your result.
+*/
+select h.hacker_id, name, sum(score) as total_score
+from 
+	hackers h inner join
+	(
+		select hacker_id, max(score) as score 
+		from submissions 
+		group by challenge_id, hacker_id
+	) max_score on h.hacker_id = max_score.hacker_id
+group by h.hacker_id, name
+having total_score > 0
+order by total_score desc, h.hacker_id;
+
+#https://www.hackerrank.com/challenges/print-prime-numbers/problem
+/* still a work in progress...*/
+select GROUP_CONCAT(SeqValue SEPARATOR '&') as primes
+from
+	(SELECT
+	    (HUNDREDS.SeqValue + TENS.SeqValue + ONES.SeqValue) SeqValue
+	FROM
+	    (
+	    SELECT 0  SeqValue
+	    UNION ALL
+	    SELECT 1 SeqValue
+	    UNION ALL
+	    SELECT 2 SeqValue
+	    UNION ALL
+	    SELECT 3 SeqValue
+	    UNION ALL
+	    SELECT 4 SeqValue
+	    UNION ALL
+	    SELECT 5 SeqValue
+	    UNION ALL
+	    SELECT 6 SeqValue
+	    UNION ALL
+	    SELECT 7 SeqValue
+	    UNION ALL
+	    SELECT 8 SeqValue
+	    UNION ALL
+	    SELECT 9 SeqValue
+	    ) ONES
+	CROSS JOIN
+	    (
+	    SELECT 0 SeqValue
+	    UNION ALL
+	    SELECT 10 SeqValue
+	    UNION ALL
+	    SELECT 20 SeqValue
+	    UNION ALL
+	    SELECT 30 SeqValue
+	    UNION ALL
+	    SELECT 40 SeqValue
+	    UNION ALL
+	    SELECT 50 SeqValue
+	    UNION ALL
+	    SELECT 60 SeqValue
+	    UNION ALL
+	    SELECT 70 SeqValue
+	    UNION ALL
+	    SELECT 80 SeqValue
+	    UNION ALL
+	    SELECT 90 SeqValue
+	    ) TENS
+	CROSS JOIN
+	    (
+	    SELECT 0 SeqValue
+	    UNION ALL
+	    SELECT 100 SeqValue
+	    UNION ALL
+	    SELECT 200 SeqValue
+	    UNION ALL
+	    SELECT 300 SeqValue
+	    UNION ALL
+	    SELECT 400 SeqValue
+	    UNION ALL
+	    SELECT 500 SeqValue
+	    UNION ALL
+	    SELECT 600 SeqValue
+	    UNION ALL
+	    SELECT 700 SeqValue
+	    UNION ALL
+	    SELECT 800 SeqValue
+	    UNION ALL
+	    SELECT 900 SeqValue
+	    ) HUNDREDS
+	) as ALL_NUMBERS
+where 
+	(SeqValue <= 3 AND SeqValue > 1) AND
+	(SeqValue % 2 != 0 or SeqValue % 3 != 0)
